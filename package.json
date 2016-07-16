@@ -1,0 +1,15 @@
+{
+  "name": "image-tweeter",
+  "version": "1.0.0",
+  "description": "This bot retweets the latest tweet using the hashtag defined in tweets in which it is tagged. It attempts to retweet once per hour.",
+  "main": "bot.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "twit": "^2.2.4"
+  },
+  "devDependencies": {}
+}
