@@ -1,88 +1,98 @@
-//Our Twitter library
-var Twit = require('twit');
+//Setting up the logger
+var winston = require('winston');
+var logger = new (winston.Logger)({
+    transports: [
+      new (winston.transports.Console)(),
+      new (winston.transports.File)({ 
+          filename: 'debug.log'
+      })
+    ]
+  });
 
-//We need to include our configuration file
+logger.level = 'debug';
+
+//Setting up the Twitter library
+var Twit = require('twit');
 var T = new Twit(require('./config.js'));
 
-//Find the latest tweet in which bot is mentioned
-function getMentions() {
-    var mentions = {count: 10}; 
-    T.get('statuses/mentions_timeline', mentions, hashtagFromMentions);
+//child process to run Processing
+var exec = require('child_process').exec;
+var fs = require('fs');
+
+//Start a stream to get tweets
+var stream = T.stream('user');
+stream.on('tweet', onTweet);
+
+//catch tweets that the bot is tagged in
+function onTweet(tweet) {
+    logger.debug("Got a tweet: " + JSON.stringify(tweet));
+
+    logger.debug("In reply to screen name: " + tweet.in_reply_to_screen_name);
+    if(tweet.in_reply_to_screen_name == 'soundvisionchem') {
+        logger.debug("We were tagged in the tweet! Creating image...");
+//        var cmd = "processing-java.exe --sketch=[path-to-project]\\processing_image --run";
+        var cmd = "processing-java.exe --sketch=C:\\Users\\Barry\\Documents\\Programming\\Personal\\TwitterPainter\\processing_image --run";
+        exec(cmd, handleProcessingResult);
+    }
+}
+//
+//after returning from javascript exec call,
+//convert the created image to base64
+function handleProcessingResult(err, stdout, stderr) {
+    logger.debug(stdout);
+    if(!err) {
+        logger.debug("Performing a media upload");
+        var filename = "processing_image\\output.png";
+        var params = {
+                encoding: "base64"
+        };
+        fs.readFile(filename, params, onFileRead);
+    } else {
+        logger.error(err);
+    }
 }
 
-//grabs hashtags from JSON and chooses the first one to retweet
-function hashtagFromMentions(error, data) {
-    // log out any errors and responses
-    console.log(error, data);
-    // If our search request to the server had no errors...
+//after returning from the file read, 
+//send the image to Twitter
+function onFileRead(err, data) {
+    if (err) {
+        logger.error("File Read Error: ")
+        logger.error(err);
+    } else {
+        var pngToPost = data;
+        var mediaUploadParams = {
+                media_data: pngToPost
+        };
+        T.post('media/upload', mediaUploadParams, onUploadResponse);
+        
+        logger.debug("File was read with no errors");
+    }
+}
+
+//after the file upload, post the tweet
+function onUploadResponse(error, data, response) {
     if (!error) {
-        // ...then we grab the ID of the tweet we want to retweet...
-        console.log(data);
-
-        var firstStatus = data[0];
-        var retweetId = firstStatus.id_str;
-        var hashtags = firstStatus.entities.hashtags[0].text;
-        console.log("Making hashtags");
-        if(hashtags != null) {
-            //retweet the hashtag we found.
-            retweetHashtag(hashtags)
-        } else {
-            console.log("Null result")
-        }
-    }
-    else {
-        console.log('There was an error with your hashtag search:', error);
+        logger.debug("Tweeting the image...");
+        var mediaIdStr = data.media_id_string;
+        logger.debug("media is: " + mediaIdStr);
+        var params = {
+                status: 'Okey Dokey ',
+                media_ids: [mediaIdStr]
+        };
+        T.post('statuses/update', params, handleTweetResponse);
+    } else {
+        logger.error("There was an error with the media upload");
+        logger.error(error);
     }
 }
 
-//This function retweets the first result it finds with the hashtag passed to it 
-//as an argument.
-function retweetHashtag(hashtag) {
-    var mediaArtSearch = {q: '#' + hashtag, count:1};
-    console.log("Searching for: " + mediaArtSearch.q);
-    T.get('search/tweets', mediaArtSearch, function (error, data) {
-        console.log(error, data);
-        // If our search request to the server had no errors...
-        if (!error) {
-            // ...then we grab the ID of the tweet we want to retweet...
-            console.log(data);
-            if(data.statuses.length > 0) {
-                var firstStatus = data.statuses[0];
-                var retweetId = firstStatus.id_str;
-                console.log("About to retweet statuses");
-                // ...and then we tell Twitter we want to retweet it!
-                T.post('statuses/retweet/' + retweetId, { }, handleRetweetResponse);
-            }
-            else {
-                console.log("Did not find any statuses");
-            }
-        }
-
-        // However, if our original search request had an error, we want to print it out here.
-        else {
-            console.log('There was an error with your hashtag search:', error);
-        }
-    });
-}
-
-//handle response from retweet request
-function handleRetweetResponse(error, response) {
+//handle response from tweet request
+function handleTweetResponse(error, data, response) {
     if (response) {
-        console.log('Success! Check your bot, it should have retweeted something.')
+        logger.debug('Success! Check your bot, it should have tweeted an image.')
     }
     // If there was an error with our Twitter call, we print it out here.
     if (error) {
-        console.log('There was an error with Twitter:', error);
+        logger.error('There was an error with Twitter:', error);
     }
 }
-
-//This function finds the latest tweet with the #mediaarts hashtag, and retweets it.
-function retweetLatest() {
-    getMentions();
-}
-
-//Try to retweet something as soon as we run the program...
-retweetLatest();
-//...and then every hour after that. Time here is in milliseconds, so
-//1000 ms = 1 second, 1 sec * 60 = 1 min, 1 min * 60 = 1 hour --> 1000 * 60 * 60
-setInterval(retweetLatest, 1000 * 60 * 60);
