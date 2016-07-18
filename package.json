@@ -1,15 +1,17 @@
 {
-  "name": "image-tweeter",
+  "name": "TwitterPainter",
   "version": "1.0.0",
-  "description": "This bot retweets the latest tweet using the hashtag defined in tweets in which it is tagged. It attempts to retweet once per hour.",
+  "description": "This bot tweets an image when tagged in a tweet.",
   "main": "bot.js",
   "scripts": {
+    "start": "node bot.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "twit": "^2.2.4"
+    "twit": "^2.2.4",
+    "winston": "^2.2.0"
   },
   "devDependencies": {}
 }
