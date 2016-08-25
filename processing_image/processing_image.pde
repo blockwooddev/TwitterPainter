@@ -1,14 +1,20 @@
 void setup() {
  size(600,400);
- for (int i=0; i < 500; i++) {
-   float x = random(width);
-   float y = random(height);
-   float r = random(100, 255);
-   float b = random(100, 255);
-   noStroke();
-   fill(r, 0, b, 255);
-   ellipse(x, y, 16, 16);
- } 
+ 
+ float middleWidth = width/2;
+ float middleHeight = height/2;
+ float rectWidth = width/4;
+ float rectHeight = height/4;
+ float xLoc = middleWidth - rectWidth/2;
+ float yLoc = middleHeight - rectHeight/2;
+ float opacity = 255;
+ 
+ background(255, 255, 255);
+ color rectColor = color(random(255), random(255), random(255), opacity);
+ fill(rectColor);
+ noStroke();
+ rect(xLoc, yLoc, rectWidth, rectHeight);
+ 
  save("output.png");
  exit();
 }
