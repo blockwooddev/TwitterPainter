@@ -23,12 +23,19 @@ var fs = require('fs');
 var stream = T.stream('user');
 stream.on('tweet', onTweet);
 
+var globalTweetParams = {};
+var botSN = 'soundvisionchem';
+
 //catch tweets that the bot is tagged in
 function onTweet(tweet) {
     logger.debug("Got a tweet: " + JSON.stringify(tweet));
-
-    logger.debug("In reply to screen name: " + tweet.in_reply_to_screen_name);
-    if(tweet.in_reply_to_screen_name == 'soundvisionchem') {
+    if(tweet.in_reply_to_screen_name == botSN) {
+        globalTweetParams.replySN = tweet.user.screen_name;
+        logger.debug("Reply to: " + globalTweetParams.replySN);
+        globalTweetParams.replyTweetId = tweet.id;
+        logger.debug("Reply to tweet id: " + globalTweetParams.replyTweetId);
+        logger.debug("In reply to screen name: " + tweet.in_reply_to_screen_name);
+    
         logger.debug("We were tagged in the tweet! Creating image...");
 //        var cmd = "processing-java.exe --sketch=[path-to-project]\\processing_image --run";
         var cmd = "processing-java.exe --sketch=C:\\Users\\Barry\\Documents\\Programming\\Personal\\TwitterPainter\\processing_image --run";
@@ -76,7 +83,8 @@ function onUploadResponse(error, data, response) {
         var mediaIdStr = data.media_id_string;
         logger.debug("media is: " + mediaIdStr);
         var params = {
-                status: 'Okey Dokey ',
+                status: '@' + globalTweetParams.replySN + ': Thanks for the mention! ',
+                in_reply_to_status_id: globalTweetParams.replyTweetId,
                 media_ids: [mediaIdStr]
         };
         T.post('statuses/update', params, handleTweetResponse);
