@@ -29,7 +29,7 @@ var botSN = 'soundvisionchem';
 //catch tweets that the bot is tagged in
 function onTweet(tweet) {
     logger.debug("Got a tweet: " + JSON.stringify(tweet));
-    if(tweet.in_reply_to_screen_name == botSN) {
+    if(tweet.in_reply_to_screen_name.toLowerCase() == botSN) {
         globalTweetParams.replySN = tweet.user.screen_name;
         logger.debug("Reply to: " + globalTweetParams.replySN);
         globalTweetParams.replyTweetId = tweet.id;
