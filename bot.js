@@ -15,9 +15,18 @@ logger.level = 'debug';
 var Twit = require('twit');
 var T = new Twit(require('./config.js'));
 
-//child process to run Processing
-var exec = require('child_process').exec;
-var fs = require('fs');
+//using Rune to create images
+let fs = require('fs');
+var Rune = require('rune.js');
+var VNode = require('virtual-dom/vnode/vnode');
+var toHTML = require('vdom-to-html');
+const svg2png = require("svg2png");
+var DrawBox = require('./designs/box');
+
+var r = new Rune({
+    width: 600, 
+    height: 400
+});
 
 //Start a stream to get tweets
 var stream = T.stream('user');
@@ -37,43 +46,22 @@ function onTweet(tweet) {
         logger.debug("In reply to screen name: " + tweet.in_reply_to_screen_name);
     
         logger.debug("We were tagged in the tweet! Creating image...");
-//        var cmd = "processing-java.exe --sketch=[path-to-project]\\processing_image --run";
-        var cmd = "processing-java.exe --sketch=C:\\Users\\Barry\\Documents\\Programming\\Personal\\TwitterPainter\\processing_image --run";
-        exec(cmd, handleProcessingResult);
-    }
-}
-//
-//after returning from javascript exec call,
-//convert the created image to base64
-function handleProcessingResult(err, stdout, stderr) {
-    logger.debug(stdout);
-    if(!err) {
-        logger.debug("Performing a media upload");
-        var filename = "processing_image\\output.png";
-        var params = {
-                encoding: "base64"
-        };
-        fs.readFile(filename, params, onFileRead);
-    } else {
-        logger.error(err);
+        //Create image
+        DrawBox.draw(r);
+        
+        var convertedSVG = toHTML(r.tree);
+        svg2png(new Buffer(convertedSVG), {width: 640, height: 480})
+        .then(onPNGConversion).catch(e => console.log(e));
     }
 }
 
-//after returning from the file read, 
-//send the image to Twitter
-function onFileRead(err, data) {
-    if (err) {
-        logger.error("File Read Error: ")
-        logger.error(err);
-    } else {
-        var pngToPost = data;
-        var mediaUploadParams = {
-                media_data: pngToPost
-        };
-        T.post('media/upload', mediaUploadParams, onUploadResponse);
+function onPNGConversion(buffer) {
+    var pngToPost = buffer.toString('base64');
+    var mediaUploadParams = {
+       media_data: pngToPost
+    };
         
-        logger.debug("File was read with no errors");
-    }
+    T.post('media/upload', mediaUploadParams, onUploadResponse)
 }
 
 //after the file upload, post the tweet
