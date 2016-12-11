@@ -48,6 +48,8 @@ function onTweet(tweet) {
         logger.debug("In reply to screen name: " + tweet.in_reply_to_screen_name);
     
         logger.debug("Grab those hashtags", tweet.entities.hashtags[0]);
+        logger.debug("Text: ", tweet.text)
+        
         logger.debug("We were tagged in the tweet! Creating image...");
         //Create image
         if(r.stage) {
@@ -58,7 +60,7 @@ function onTweet(tweet) {
             }
         }
         
-        processHashtags(tweet.entities.hashtags);
+        processText(tweet.text);
 //        DrawBox.draw(r);
         
         var convertedSVG = toHTML(r.tree);
@@ -67,16 +69,18 @@ function onTweet(tweet) {
     }
 }
 
-function processHashtags(hashtags) {
-    console.log(hashtags);
-    for(hashInd in hashtags) {
-        hash = hashtags[hashInd];
-        console.log(hash);
+function processText(text) {
+    logger.debug("Entered processText with this: " + text);
+    var words = text.split(" ");
+    
+    for(wordInd in words) {
+        var word = words[wordInd];
+        console.log(word);
         var xLoc = Rune.random(0,600);
         var yLoc = Rune.random(0,400);
         var color  = new Rune.Color(Rune.random(0,255), Rune.random(0,255), Rune.random(0,255));
         
-        switch(hash.text) {
+        switch(word) {
             case 'rect':
                 var width = Rune.random(10,200);
                 var height = Rune.random(10,100);
@@ -91,7 +95,7 @@ function processHashtags(hashtags) {
                 r.rect(xLoc, yLoc, side, side).stroke(false).fill(color);
                 break;
             default:
-                logger.debug("Couldn't recognize that hashtag:" + hash.text);
+                logger.debug("Couldn't recognize that word:" + word);
         }
     }
     r.draw();
