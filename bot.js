@@ -33,27 +33,90 @@ var stream = T.stream('user');
 stream.on('tweet', onTweet);
 
 var globalTweetParams = {};
-var botSN = 'soundvisionchem';
+var botSN = 'tweetanddraw';
+
+var shapes = [];
 
 //catch tweets that the bot is tagged in
 function onTweet(tweet) {
     logger.debug("Got a tweet: " + JSON.stringify(tweet));
-    if(tweet.in_reply_to_screen_name.toLowerCase() == botSN) {
+    if(tweet.in_reply_to_screen_name && tweet.in_reply_to_screen_name.toLowerCase() == botSN) {
         globalTweetParams.replySN = tweet.user.screen_name;
         logger.debug("Reply to: " + globalTweetParams.replySN);
         globalTweetParams.replyTweetId = tweet.id;
         logger.debug("Reply to tweet id: " + globalTweetParams.replyTweetId);
         logger.debug("In reply to screen name: " + tweet.in_reply_to_screen_name);
     
+        logger.debug("Grab those hashtags", tweet.entities.hashtags[0]);
+        logger.debug("Text: ", tweet.text)
+        
         logger.debug("We were tagged in the tweet! Creating image...");
         //Create image
-        DrawBox.draw(r);
+        if(r.stage) {
+            var currentChildren = r.stage.children;
+            for(child in currentChildren) {
+                var childElement = currentChildren[child];
+                r.stage.remove(childElement);
+            }
+        }
+        
+        processText(tweet.text);
+//        DrawBox.draw(r);
         
         var convertedSVG = toHTML(r.tree);
-        svg2png(new Buffer(convertedSVG), {width: 640, height: 480})
+        svg2png(new Buffer(convertedSVG), {width: 600, height: 400})
         .then(onPNGConversion).catch(e => console.log(e));
     }
 }
+
+function processText(text) {
+    logger.debug("Entered processText with this: " + text);
+    var words = text.split(" ");
+    
+    for(wordInd in words) {
+        var word = words[wordInd];
+        console.log(word);
+        var xLoc = Rune.random(0,600);
+        var yLoc = Rune.random(0,400);
+        var color  = new Rune.Color(Rune.random(0,255), Rune.random(0,255), Rune.random(0,255));
+        
+        switch(word) {
+            case 'rect':
+                var width = Rune.random(10,200);
+                var height = Rune.random(10,100);
+                r.rect(xLoc, yLoc, width, height).stroke(false).fill(color);
+                break;
+            case 'circle':
+                var radius = Rune.random(5,100);
+                r.circle(xLoc, yLoc, radius).stroke(false).fill(color);
+                break;
+            case 'square':
+                var side = Rune.random(10,200);
+                r.rect(xLoc, yLoc, side, side).stroke(false).fill(color);
+                break;
+            case 'triangle':
+                var x2 = Rune.random(0, 600);
+                var y2 = Rune.random(0, 400);
+                while(x2 == xLoc && y2 == yLoc) {
+                    x2 = Rune.random(0, 600);
+                    y2 = Rune.random(0, 400);
+                }
+                var x3 = Rune.random(0, 600);
+                var y3 = Rune.random(0, 400);
+                while((x3 == xLoc && y3 == yLoc) || (x3 == x2 && y3 == y2)) {
+                    x3 = Rune.random(0, 600);
+                    y3 = Rune.random(0, 400);
+                }
+           
+                r.triangle(xLoc, yLoc, x2, y2, x3, y3).stroke(false).fill(color);
+                break;
+            default:
+                logger.debug("Couldn't recognize that word:" + word);
+        }
+    }
+    r.draw();
+}
+
 
 function onPNGConversion(buffer) {
     var pngToPost = buffer.toString('base64');
