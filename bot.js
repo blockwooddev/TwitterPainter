@@ -33,7 +33,7 @@ var stream = T.stream('user');
 stream.on('tweet', onTweet);
 
 var globalTweetParams = {};
-var botSN = 'soundvisionchem';
+var botSN = 'tweetanddraw';
 
 var shapes = [];
 
