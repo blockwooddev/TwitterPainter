@@ -40,7 +40,7 @@ var shapes = [];
 //catch tweets that the bot is tagged in
 function onTweet(tweet) {
     logger.debug("Got a tweet: " + JSON.stringify(tweet));
-    if(tweet.in_reply_to_screen_name.toLowerCase() == botSN) {
+    if(tweet.in_reply_to_screen_name && tweet.in_reply_to_screen_name.toLowerCase() == botSN) {
         globalTweetParams.replySN = tweet.user.screen_name;
         logger.debug("Reply to: " + globalTweetParams.replySN);
         globalTweetParams.replyTweetId = tweet.id;
@@ -93,6 +93,22 @@ function processText(text) {
             case 'square':
                 var side = Rune.random(10,200);
                 r.rect(xLoc, yLoc, side, side).stroke(false).fill(color);
+                break;
+            case 'triangle':
+                var x2 = Rune.random(0, 600);
+                var y2 = Rune.random(0, 400);
+                while(x2 == xLoc && y2 == yLoc) {
+                    x2 = Rune.random(0, 600);
+                    y2 = Rune.random(0, 400);
+                }
+                var x3 = Rune.random(0, 600);
+                var y3 = Rune.random(0, 400);
+                while((x3 == xLoc && y3 == yLoc) || (x3 == x2 && y3 == y2)) {
+                    x3 = Rune.random(0, 600);
+                    y3 = Rune.random(0, 400);
+                }
+           
+                r.triangle(xLoc, yLoc, x2, y2, x3, y3).stroke(false).fill(color);
                 break;
             default:
                 logger.debug("Couldn't recognize that word:" + word);
