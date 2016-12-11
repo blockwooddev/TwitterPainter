@@ -1,6 +1,6 @@
 var Rune = require('rune.js');
 
-var ApollonianGasket = {
+var Box = {
      draw: function (rune) {
          var middleWidth = rune.width/2;
          var middleHeight = rune.height/2;
@@ -19,4 +19,4 @@ var ApollonianGasket = {
      }  
 }
 
-module.exports = ApollonianGasket;
+module.exports = Box;

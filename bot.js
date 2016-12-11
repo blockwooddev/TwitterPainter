@@ -35,6 +35,8 @@ stream.on('tweet', onTweet);
 var globalTweetParams = {};
 var botSN = 'soundvisionchem';
 
+var shapes = [];
+
 //catch tweets that the bot is tagged in
 function onTweet(tweet) {
     logger.debug("Got a tweet: " + JSON.stringify(tweet));
@@ -45,15 +47,56 @@ function onTweet(tweet) {
         logger.debug("Reply to tweet id: " + globalTweetParams.replyTweetId);
         logger.debug("In reply to screen name: " + tweet.in_reply_to_screen_name);
     
+        logger.debug("Grab those hashtags", tweet.entities.hashtags[0]);
         logger.debug("We were tagged in the tweet! Creating image...");
         //Create image
-        DrawBox.draw(r);
+        if(r.stage) {
+            var currentChildren = r.stage.children;
+            for(child in currentChildren) {
+                var childElement = currentChildren[child];
+                r.stage.remove(childElement);
+            }
+        }
+        
+        processHashtags(tweet.entities.hashtags);
+//        DrawBox.draw(r);
         
         var convertedSVG = toHTML(r.tree);
-        svg2png(new Buffer(convertedSVG), {width: 640, height: 480})
+        svg2png(new Buffer(convertedSVG), {width: 600, height: 400})
         .then(onPNGConversion).catch(e => console.log(e));
     }
 }
+
+function processHashtags(hashtags) {
+    console.log(hashtags);
+    for(hashInd in hashtags) {
+        hash = hashtags[hashInd];
+        console.log(hash);
+        var xLoc = Rune.random(0,600);
+        var yLoc = Rune.random(0,400);
+        var color  = new Rune.Color(Rune.random(0,255), Rune.random(0,255), Rune.random(0,255));
+        
+        switch(hash.text) {
+            case 'rect':
+                var width = Rune.random(10,200);
+                var height = Rune.random(10,100);
+                r.rect(xLoc, yLoc, width, height).stroke(false).fill(color);
+                break;
+            case 'circle':
+                var radius = Rune.random(5,100);
+                r.circle(xLoc, yLoc, radius).stroke(false).fill(color);
+                break;
+            case 'square':
+                var side = Rune.random(10,200);
+                r.rect(xLoc, yLoc, side, side).stroke(false).fill(color);
+                break;
+            default:
+                logger.debug("Couldn't recognize that hashtag:" + hash.text);
+        }
+    }
+    r.draw();
+}
+
 
 function onPNGConversion(buffer) {
     var pngToPost = buffer.toString('base64');
