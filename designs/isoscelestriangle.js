@@ -2,13 +2,13 @@ var Rune = require('rune.js');
 
 var IsoscelesTriangle = {
      create: function (rune) {
-         var xLoc = Rune.random(0,600);
-         var yLoc = Rune.random(0,400);
+         var xLoc = Rune.random(0,rune.width);
+         var yLoc = Rune.random(0,rune.height);
          var color  = new Rune.Color(Rune.random(0,255), Rune.random(0,255), Rune.random(0,255));
          
-         var sidelength = Rune.random(5, 300);
-         var trianglepeak = Rune.random(2, 178)*0.017;
-         var trianglerot = Rune.random(0, 360)*0.017;
+         var sidelength = Rune.random(5, rune.width/2);
+         var trianglepeak = Rune.radians(Rune.random(2, 178));
+         var trianglerot = Rune.radians(Rune.random(0, 360));
          
          
          var x2 = sidelength*Math.cos(trianglerot) + xLoc;

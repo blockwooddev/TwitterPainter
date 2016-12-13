@@ -23,6 +23,7 @@ var toHTML = require('vdom-to-html');
 const svg2png = require("svg2png");
 var DrawBox = require('./designs/box');
 var IsoscelesTriangle = require('./designs/isoscelestriangle')
+var BoxFill = require('./designs/boxfill')
 
 var r = new Rune({
     width: 600, 
@@ -117,6 +118,13 @@ function processText(text) {
                     wordInd += 1;
                     IsoscelesTriangle.create(r);
                 }
+                break;
+            case 'box':
+                if(words[wordInd+1] == 'fill') {
+                    wordInd += 1;
+                    BoxFill.create(r);
+                }
+                break;
             default:
                 logger.debug("Couldn't recognize that word:" + word);
         }
