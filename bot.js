@@ -22,6 +22,7 @@ var VNode = require('virtual-dom/vnode/vnode');
 var toHTML = require('vdom-to-html');
 const svg2png = require("svg2png");
 var DrawBox = require('./designs/box');
+var IsoscelesTriangle = require('./designs/isoscelestriangle')
 
 var r = new Rune({
     width: 600, 
@@ -73,7 +74,8 @@ function processText(text) {
     logger.debug("Entered processText with this: " + text);
     var words = text.split(" ");
     
-    for(wordInd in words) {
+    var wordInd = 0;
+    for(workInd = 0; wordInd < words.length; wordInd++) {
         var word = words[wordInd];
         console.log(word);
         var xLoc = Rune.random(0,600);
@@ -81,7 +83,7 @@ function processText(text) {
         var color  = new Rune.Color(Rune.random(0,255), Rune.random(0,255), Rune.random(0,255));
         
         switch(word) {
-            case 'rect':
+            case 'rectangle':
                 var width = Rune.random(10,200);
                 var height = Rune.random(10,100);
                 r.rect(xLoc, yLoc, width, height).stroke(false).fill(color);
@@ -110,6 +112,11 @@ function processText(text) {
            
                 r.triangle(xLoc, yLoc, x2, y2, x3, y3).stroke(false).fill(color);
                 break;
+            case 'isosceles': 
+                if(words[wordInd+1] == "triangle"){
+                    wordInd += 1;
+                    IsoscelesTriangle.create(r);
+                }
             default:
                 logger.debug("Couldn't recognize that word:" + word);
         }
