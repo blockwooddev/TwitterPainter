@@ -34,11 +34,10 @@ var r = new Rune({
 //Start a stream to get tweets
 var stream = T.stream('user');
 stream.on('tweet', onTweet);
+logger.debug("Initialized stream");
 
 var globalTweetParams = {};
 var botSN = 'tweetanddraw';
-
-var shapes = [];
 
 //catch tweets that the bot is tagged in
 function onTweet(tweet) {
@@ -49,13 +48,13 @@ function onTweet(tweet) {
         globalTweetParams.replyTweetId = tweet.id;
         logger.debug("Reply to tweet id: " + globalTweetParams.replyTweetId);
         logger.debug("In reply to screen name: " + tweet.in_reply_to_screen_name);
-    
-        logger.debug("Grab those hashtags", tweet.entities.hashtags[0]);
+
         logger.debug("Text: ", tweet.text)
         
         logger.debug("We were tagged in the tweet! Creating image...");
         //Create image
         if(r.stage) {
+            logger.debug("Stage: ", r.stage);
             var currentChildren = r.stage.children;
             for(child in currentChildren) {
                 var childElement = currentChildren[child];
