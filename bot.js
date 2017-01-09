@@ -22,8 +22,9 @@ var VNode = require('virtual-dom/vnode/vnode');
 var toHTML = require('vdom-to-html');
 const svg2png = require("svg2png");
 var DrawBox = require('./designs/box');
-var IsoscelesTriangle = require('./designs/isoscelestriangle')
-var BoxFill = require('./designs/boxfill')
+var IsoscelesTriangle = require('./designs/isoscelestriangle');
+var BoxFill = require('./designs/boxfill');
+var Polygons = require('./designs/polygons');
 
 var r = new Rune({
     width: 600, 
@@ -73,7 +74,7 @@ function onTweet(tweet) {
 
 function processText(text) {
     logger.debug("Entered processText with this: " + text);
-    var words = text.split(" ");
+    var words = text.toLowerCase().split(" ");
     
     var wordInd = 0;
     for(workInd = 0; wordInd < words.length; wordInd++) {
@@ -113,6 +114,24 @@ function processText(text) {
            
                 r.triangle(xLoc, yLoc, x2, y2, x3, y3).stroke(false).fill(color);
                 break;
+            case 'pentagon':
+                Polygons.create(r, 5);
+                break;
+            case 'hexagon':
+                Polygons.create(r, 6);
+                break;
+            case 'heptagon':
+                Polygons.create(r, 7);
+                break;
+            case 'octagon':
+                Polygons.create(r, 8);
+                break;
+            case 'nonagon':
+                Polygons.create(r, 9);
+                break;
+            case 'decagon':
+                Polygons.create(r, 10);
+                break;
             case 'isosceles': 
                 if(words[wordInd+1] == "triangle"){
                     wordInd += 1;
@@ -123,6 +142,9 @@ function processText(text) {
                 if(words[wordInd+1] == 'fill') {
                     wordInd += 1;
                     BoxFill.create(r);
+                } else {
+                    var side = Rune.random(10,200);
+                    r.rect(xLoc, yLoc, side, side).stroke(false).fill(color);
                 }
                 break;
             default:
