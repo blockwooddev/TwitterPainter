@@ -55,9 +55,16 @@ function onTweet(tweet) {
         //Create image
         if(r.stage) {
             logger.debug("Stage: ", r.stage);
+            
             var currentChildren = r.stage.children;
             for(child in currentChildren) {
                 var childElement = currentChildren[child];
+                r.stage.remove(childElement);
+            }
+            
+            var renderedChildren = r.stage.renderedChildren;
+            for(child in renderedChildren) {
+                var childElement = renderedChildren[child];
                 r.stage.remove(childElement);
             }
         }
