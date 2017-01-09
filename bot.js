@@ -67,6 +67,7 @@ function onTweet(tweet) {
                 var childElement = renderedChildren[child];
                 r.stage.remove(childElement);
             }
+            logger.debug("Cleared Stage: ", r.stage);
         }
         
         processText(tweet.text);
