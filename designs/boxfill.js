@@ -101,9 +101,8 @@ var BoxFill = {
              }
          }
      },
-     draw: function(rune) {
+     create: function(rune) {
          this.drawBox(rune, 0, 0, rune.width, rune.height);
-         rune.draw();
      }
 }
 
